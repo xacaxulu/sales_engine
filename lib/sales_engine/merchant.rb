@@ -24,19 +24,19 @@ module SalesEngine
       invoice_item_revenues = Hash.new(0)
       InvoiceItem.all_successful.each do |invoice_item|
         amount = invoice_item.quantity * invoice_item.unit_price
-        invoice_item_revenues[invoice_item.invoice_id] += amount 
+        invoice_item_revenues[invoice_item.invoice_id] += amount
       end
-      merchant_revenue_hash = Hash.new(0)
+      mrh = Hash.new(0)
       invoice_item_revenues.each_pair do |k,v|
-        merchant_revenue_hash[Invoice.find_by_id(k).merchant_id] += BigDecimal.new(v.to_s.insert(-3,'.'))
+        mrh[Invoice.find_by_id(k).merchant_id] += BigDecimal.new(v)/100
       end
-      @revenue = merchant_revenue_hash
+      @revenue = mrh
     end
 
     def self.most_revenue(i)
       list = []
       sorted_array = Hash[@revenue.sort_by { |k,v| v }.reverse]
-      sorted_array.keys[0..i-1].each {|key| list << Merchant.find_by_id(key)}   
+      sorted_array.keys[0..i-1].each {|key| list << Merchant.find_by_id(key)}
       return list
     end
 
@@ -46,22 +46,22 @@ module SalesEngine
         amount = invoice_item.quantity
         most_items_hash[invoice_item.invoice_id] += amount
       end
-      merchant_quantity_hash = Hash.new(0)
+      mqh = Hash.new(0)
       most_items_hash.each_pair do |k,v|
-        merchant_quantity_hash[Merchant.find_by_id(Invoice.find_by_id(k.to_i).merchant_id).id] += v 
+        mqh[Merchant.find_by_id(Invoice.find_by_id(k.to_i).merchant_id).id] += v
       end
-      @merchant_most_items_sold = merchant_quantity_hash
+      @merchant_most_items_sold = mqh
     end
 
     def self.most_items(int)
       list = []
       sorted_array = Hash[@merchant_most_items_sold.sort_by { |k,v| v }.reverse]
-      sorted_array.keys[0..int-1].each {|key| list << Merchant.find_by_id(key)}   
-      return list 
+      sorted_array.keys[0..int-1].each {|key| list << Merchant.find_by_id(key)}
+      return list
     end
 
     def self.revenue(date)
-      parsed_date = Date.parse(date).strftime("%Y-%m-%d")
+      parsed_date = date.strftime("%Y-%m-%d")
       amount = Hash.new(0)
       rev=->(x,y){x*y}
       InvoiceItem.all_successful.each do |item|
@@ -77,21 +77,29 @@ module SalesEngine
       rev=->(x,y){x*y}
       if date.nil?
         hash = Hash.new(0)
-        InvoiceItem.all_successful.each do |i| 
-          hash[Merchant.find_by_id(Invoice.find_by_id(i.invoice_id).merchant_id).id] += (rev.(i.unit_price,i.quantity))
+        InvoiceItem.all_successful.each do |i|
+          hash[Merchant.find_by_id(Invoice.find_by_id(
+          i.invoice_id).merchant_id).id] +=
+          (rev.(i.unit_price,i.quantity))
         end
-        return BigDecimal.new(hash[self.id].to_s.insert(-3,'.'))
-      else 
-        @date = Date.parse(date).strftime("%Y-%m-%d")
-        @array = []
-        InvoiceItem.all_successful.each do |item|
-          if Invoice.find_by_id(item.invoice_id).created_at == @date && Invoice.find_by_id(item.invoice_id).merchant_id == self.id
-            @array << rev.(item.quantity,item.unit_price)
-          else
-          end
-        end
-        return BigDecimal.new(@array.inject(:+).to_s.insert(-3,'.'))
+        return BigDecimal.new(hash[self.id])/100
+      else
+        revenues(date)
       end
+    end
+
+    def revenues(date)
+      rev=->(x,y){x*y}
+      date = date.strftime("%Y-%m-%d")
+      @array = []
+      InvoiceItem.all_successful.each do |item|
+        if Invoice.find_by_id(item.invoice_id).created_at == date &&
+          Invoice.find_by_id(item.invoice_id).merchant_id == self.id
+          @array << rev.(item.quantity,item.unit_price)
+        else
+        end
+      end
+      return BigDecimal.new(@array.inject(:+))/100
     end
 
     def self.count
@@ -100,7 +108,7 @@ module SalesEngine
 
     def self.random
       @merchants.sample
-    end 
+    end
 
     def self.find_by_name(name)
       @merchants.find {|m| m.name == name}
@@ -123,7 +131,7 @@ module SalesEngine
     end
 
     def invoices
-      Invoice.find_all_by_merchant_id(self.id)
+      @invoices ||= SalesEngine::Invoice.find_all_by_merchant_id(@id)
     end
 
     def paid_invoices
@@ -150,7 +158,9 @@ module SalesEngine
 
     def customers_with_pending_invoices
       customer = []
-      pending_invoices.collect {|i| customer << Customer.find_by_id(i.customer_id)}
+      pending_invoices.collect do |i|
+        customer << Customer.find_by_id(i.customer_id)
+      end
       return customer
     end
   end

@@ -9,7 +9,7 @@ module SalesEngine
       @id = id.to_i
       @name = name
       @description = description
-      @unit_price = BigDecimal.new(unit_price)
+      @unit_price = BigDecimal.new(unit_price.to_s.insert(-3,'.'))
       @merchant_id = merchant_id.to_i
     end
 
@@ -48,9 +48,9 @@ module SalesEngine
     def self.find_by_merchant_id(merchant_id)
       @items.find {|i| i.merchant_id == merchant_id}
     end
-    
+
     def self.find_by_unit_price(unit_price)
-      @items.find {|i| i.unit_price == BigDecimal.new(unit_price.to_s)}
+      @items.find {|i| i.unit_price == unit_price}
     end
 
     def self.find_all_by_name(name)

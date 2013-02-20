@@ -15,18 +15,28 @@ module SalesEngine
       @pending_invoice_items = []
       contents = CSV.open('./data/invoice_items.csv', :headers => true)
       contents.each do |row|
+        inv = Invoice.all_successful_ids
+        inv_ids = Invoice.all_ids
         @invoice_items << InvoiceItem.new(row[0],row[1],row[2],row[3],row[4])
-        if Invoice.all_successful_ids.include?(row[2].to_i)
+        if inv.include?(row[2].to_i)
           @successful_invoice_items << InvoiceItem.new(row[0],
                                                        row[1],
                                                        row[2],
                                                        row[3],
                                                        row[4])
-        elsif !Invoice.all_ids.include?(row[2].to_i) || !Invoice.all_successful_ids.include?(row[2].to_i)
-          @pending_invoice_items << InvoiceItem.new(row[0],row[1],row[2],row[3],row[4])
+        elsif !inv_ids.include?(row[2].to_i) || !inv.include?(row[2].to_i)
+          @pending_invoice_items << InvoiceItem.new(row[0],
+                                                    row[1],
+                                                    row[2],
+                                                    row[3],
+                                                    row[4])
         else
         end
       end
+    end
+
+    def self.create(id,item_id,invoice_id,quantity,unit_price)
+      @invoice_items << self.new(id,item_id,invoice_id,quantity,unit_price)
     end
 
     def self.all
@@ -44,9 +54,11 @@ module SalesEngine
     def self.filter_by_item(item_id)
       InvoiceItem.all_successful.select { |ii| ii.item_id == item_id }
     end
-   
+
     def self.revenue_per_item(item_id)
-      filter_by_item(item_id).collect { |ii| ii.unit_price * ii.quantity }.inject(:+)
+      filter_by_item(item_id).collect do |ii|
+        ii.unit_price * ii.quantity
+      end.inject(:+)
     end
 
     def self.count
@@ -108,7 +120,5 @@ module SalesEngine
     def item
       Item.find_by_id(self.item_id)
     end
-
-    
   end
 end

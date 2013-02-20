@@ -25,13 +25,13 @@ module SalesEngine
       refute_equal nil,successful_transaction
       refute_equal SalesEngine::Transaction.all,successful_transaction
       refute_equal 5595, successful_transaction.count
-      assert_equal 4649, successful_transaction.count
+      assert_equal 4648, successful_transaction.count
     end
 
     def test_all_successful_invoice_ids
       ids_list = SalesEngine::Transaction.all_successful_invoice_ids
       assert_kind_of Array,ids_list
-      assert_equal 4649,ids_list.count
+      assert_equal 4648,ids_list.count
     end
     def test_random_method_works
       alpha = SalesEngine::Transaction.random

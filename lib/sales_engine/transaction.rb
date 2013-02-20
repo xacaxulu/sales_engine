@@ -2,9 +2,15 @@ require 'date'
 
 module SalesEngine
   class Transaction
-    attr_accessor :id, :invoice_id, :credit_card_number, :credit_card_number_expiration_date, :result
+    attr_accessor :id, :invoice_id,
+                  :credit_card_number,
+                  :credit_card_number_expiration_date,
+                  :result
 
-    def initialize(id, invoice_id, credit_card_number, credit_card_number_expiration_date, result)
+    def initialize(id, invoice_id,
+                   credit_card_number,
+                   credit_card_number_expiration_date,
+                   result)
       @id = id.to_i
       @invoice_id = invoice_id.to_i
       @credit_card_number = credit_card_number.to_i
@@ -18,14 +24,27 @@ module SalesEngine
       @failed_transactions = []
       contents = CSV.open('./data/transactions.csv', :headers => true)
       contents.each do |row|
+        trans = Transaction.all_successful_ids
         @transactions << Transaction.new(row[0],row[1],row[2],row[3],row[4])
         if row[4] == 'success'
-          @successful_transactions << Transaction.new(row[0],row[1],row[2],row[3],row[4])
-        elsif row[4] == 'failed' && !Transaction.all_successful_ids.include?(row[0])
-          @failed_transactions << Transaction.new(row[0],row[1],row[2],row[3],row[4])
+          @successful_transactions << Transaction.new(row[0],row[1],
+                                                      row[2],row[3],row[4])
+        elsif row[4] == 'failed' && !trans.include?(row[0])
+          @failed_transactions << Transaction.new(row[0],row[1],
+                                                  row[2],row[3],row[4])
         else
         end
       end
+    end
+
+    def self.create(id, invoice_id,
+                   credit_card_number,
+                   credit_card_number_expiration_date,
+                   result)
+      @transactions << self.new(id, invoice_id,
+                   credit_card_number,
+                   credit_card_number_expiration_date,
+                   result)
     end
 
     def self.all

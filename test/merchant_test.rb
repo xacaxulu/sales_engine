@@ -76,7 +76,7 @@ class MerchantTest < MiniTest::Unit::TestCase
 
   def test_self_revenue_method
      # it "returns all revenue for a given date"
-    date = "Tue, 20 Mar 2012"
+    date = Date.parse("Tue, 20 Mar 2012")
     revenue = SalesEngine::Merchant.revenue(date)
     assert_equal BigDecimal.new("2549722.91"),revenue
   end
