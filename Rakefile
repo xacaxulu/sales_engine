@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 require 'rake/testtask'
 
 task :default => :test
@@ -24,8 +23,6 @@ task :harness => :gem do
   end
 end
 
-=======
->>>>>>> 63d994479183eb96ec144cdfd4f83bd6cf1c4179
 namespace :sanitation do
   desc "Check line lengths & whitespace with Cane"
   task :lines do
@@ -47,8 +44,5 @@ namespace :sanitation do
 
   desc "Check both line length and method length"
   task :all => [:lines, :methods]
-<<<<<<< HEAD
 end
-=======
 end
->>>>>>> 63d994479183eb96ec144cdfd4f83bd6cf1c4179
