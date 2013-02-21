@@ -9,13 +9,13 @@ module SalesEngine
     end
 
     def test_load_method_works
-      assert_equal 5595, SalesEngine::Transaction.count
+      assert_equal 5596, SalesEngine::Transaction.count
     end
 
     def test_all_method
       transaction = SalesEngine::Transaction.all
       assert_kind_of Array, transaction
-      assert_equal 5595, transaction.count
+      assert_equal 5596, transaction.count
     end
 
     def test_all_successful
@@ -24,7 +24,7 @@ module SalesEngine
       refute_equal [],successful_transaction
       refute_equal nil,successful_transaction
       refute_equal SalesEngine::Transaction.all,successful_transaction
-      refute_equal 5595, successful_transaction.count
+      refute_equal 5596, successful_transaction.count
       assert_equal 4648, successful_transaction.count
     end
 
